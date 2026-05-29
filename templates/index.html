@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ThermoLabel — Conversor de Etiquetas Térmicas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="noise"></div>
+
+  <header>
+    <div class="logo">
+      <span class="logo-icon">▣</span>
+      <span class="logo-text">ThermoLabel</span>
+    </div>
+    <div class="badge">AIYIN AE240 · Amazon PDF</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Converta suas<br /><em>etiquetas Amazon</em><br />para impressão térmica</h1>
+      <p class="subtitle">Redimensiona automaticamente cada etiqueta do PDF da Amazon para o formato exato da sua impressora térmica.</p>
+    </section>
+
+    <div class="app-container">
+      <!-- STEP 1: Upload -->
+      <div class="card" id="card-upload">
+        <div class="card-step">01</div>
+        <h2>Enviar PDF</h2>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="file-input" accept=".pdf" hidden />
+          <div class="drop-icon">⬆</div>
+          <p class="drop-label">Arraste o PDF aqui</p>
+          <p class="drop-sub">ou <button class="link-btn" onclick="document.getElementById('file-input').click()">clique para selecionar</button></p>
+          <div class="file-selected" id="file-selected" style="display:none">
+            <span class="file-icon">📄</span>
+            <span id="file-name"></span>
+            <button class="remove-btn" onclick="removeFile()">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Config -->
+      <div class="card" id="card-config">
+        <div class="card-step">02</div>
+        <h2>Configurar Etiqueta</h2>
+
+        <div class="config-grid">
+          <div class="config-group">
+            <label>Largura (mm)</label>
+            <div class="input-wrap">
+              <input type="number" id="width_mm" value="50" min="10" max="300" step="0.5" />
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+          <div class="config-group">
+            <label>Altura (mm)</label>
+            <div class="input-wrap">
+              <input type="number" id="height_mm" value="25" min="10" max="300" step="0.5" />
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+          <div class="config-group">
+            <label>Colunas no PDF</label>
+            <div class="input-wrap">
+              <input type="number" id="cols" value="3" min="1" max="10" />
+              <span class="input-unit">col</span>
+            </div>
+          </div>
+          <div class="config-group">
+            <label>Linhas no PDF</label>
+            <div class="input-wrap">
+              <input type="number" id="rows" value="9" min="1" max="20" />
+              <span class="input-unit">lin</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="presets">
+          <span class="presets-label">Pré-sets:</span>
+          <button class="preset-btn active" data-w="50" data-h="25" data-c="3" data-r="9">Amazon A4 (3×9)</button>
+          <button class="preset-btn" data-w="100" data-h="50" data-c="2" data-r="5">100×50mm</button>
+          <button class="preset-btn" data-w="75" data-h="25" data-c="2" data-r="5">75×25mm</button>
+          <button class="preset-btn" data-w="40" data-h="30" data-c="2" data-r="5">40×30mm</button>
+        </div>
+
+        <div class="preview-size">
+          <div class="size-visual" id="size-visual">
+            <div class="size-label-inner">
+              <span id="size-preview-text">50 × 25 mm</span>
+            </div>
+          </div>
+          <p class="size-note">Proporção visual da etiqueta final</p>
+        </div>
+      </div>
+
+      <!-- STEP 3: Convert -->
+      <div class="card card-action" id="card-action">
+        <div class="card-step">03</div>
+        <h2>Converter & Baixar</h2>
+
+        <button class="convert-btn" id="convert-btn" onclick="convertPDF()">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text">Converter Etiquetas</span>
+        </button>
+
+        <!-- Progress -->
+        <div class="progress-wrap" id="progress-wrap" style="display:none">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <p class="progress-msg" id="progress-msg">Processando...</p>
+        </div>
+
+        <!-- Result -->
+        <div class="result-wrap" id="result-wrap" style="display:none">
+          <div class="result-info">
+            <div class="result-stat">
+              <span class="stat-num" id="stat-labels">—</span>
+              <span class="stat-label">etiquetas</span>
+            </div>
+            <div class="result-divider">→</div>
+            <div class="result-stat">
+              <span class="stat-num" id="stat-size">—</span>
+              <span class="stat-label">por etiqueta</span>
+            </div>
+          </div>
+          <button class="download-btn" id="download-btn">
+            <span>⬇</span> Baixar PDF Convertido
+          </button>
+          <button class="new-btn" onclick="resetApp()">Converter outro arquivo</button>
+        </div>
+
+        <!-- Error -->
+        <div class="error-wrap" id="error-wrap" style="display:none">
+          <div class="error-icon">⚠</div>
+          <p id="error-msg">Erro desconhecido.</p>
+          <button class="new-btn" onclick="resetError()">Tentar novamente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info section -->
+    <section class="info-section">
+      <div class="info-card">
+        <div class="info-icon">🖨</div>
+        <h3>AIYIN AE240</h3>
+        <p>Otimizado para impressoras térmicas. Gera PDF com cada etiqueta em página separada no tamanho exato.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">📦</div>
+        <h3>PDF da Amazon</h3>
+        <p>Suporta PDFs de etiquetas gerados pelo Amazon Seller Central com múltiplas etiquetas por página.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⚙</div>
+        <h3>100% Personalizável</h3>
+        <p>Ajuste largura, altura, colunas e linhas conforme o layout do seu PDF de origem.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>ThermoLabel · Processamento 100% local · Seus arquivos não são armazenados</p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
